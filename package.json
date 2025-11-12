@@ -1,0 +1,17 @@
+{
+  "name": "ticket-management-system",
+  "version": "1.0.0",
+  "description": "Ticket Management System with Customer and Company portals",
+  "main": "Shine Page.html",
+  "scripts": {
+    "build": "echo 'Static HTML project - no build required' && exit 0",
+    "start": "python -m http.server 8000 || npx http-server -p 8000",
+    "dev": "python -m http.server 8000 || npx http-server -p 8000"
+  },
+  "keywords": ["ticket", "management", "html", "javascript", "customer", "portal"],
+  "author": "Anish",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
