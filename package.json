@@ -2,11 +2,11 @@
   "name": "ticket-management-system",
   "version": "1.0.0",
   "description": "Ticket Management System with Customer and Company portals",
-  "main": "Shine Page.html",
+  "main": "index.html",
   "scripts": {
-    "build": "echo 'Static HTML project - no build required' && exit 0",
-    "start": "python -m http.server 8000 || npx http-server -p 8000",
-    "dev": "python -m http.server 8000 || npx http-server -p 8000"
+    "build": "mkdir -p dist && cp -r *.html *.js *.css dist/ 2>/dev/null || (md dist 2>nul & copy *.html dist\\ & copy *.js dist\\ & copy *.css dist\\) && echo 'Build completed successfully'",
+    "start": "npx http-server . -p 8080 -o",
+    "dev": "npx http-server . -p 8000 -o"
   },
   "keywords": ["ticket", "management", "html", "javascript", "customer", "portal"],
   "author": "Anish",
