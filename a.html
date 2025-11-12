@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Customer Portal - Ticket Management System</title>
+  <style>
+    :root { --bg:#0b1220; --card:#121a2b; --muted:#9db0d1; --text:#e9eef7; --accent:#6aa1ff; --ok:#3ccf91; --warn:#ffcf5a; --bad:#ff6b6b; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:linear-gradient(180deg, #0b1220, #0b1220 40%, #0f1830); color:var(--text); }
+    header { position:sticky; top:0; z-index:5; backdrop-filter: blur(8px); background:#0b1220cc; border-bottom:1px solid #1e2a44; }
+    .container { max-width:900px; margin:0 auto; padding:18px 20px; }
+    h1 { margin:0; font-size:22px; letter-spacing:0.3px; }
+    .card { background:var(--card); border:1px solid #1e2a44; border-radius:16px; padding:18px; margin-bottom:20px; }
+    .card h2 { margin:0 0 10px; font-size:16px; color:#cfe0ff; }
+    label { font-size:12px; color:var(--muted); display:block; margin:8px 0 6px; }
+    input, textarea, button { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #223154; background:#0c1426; color:var(--text); }
+    textarea { min-height:70px; resize:vertical; }
+    button { cursor:pointer; font-weight:600; background:linear-gradient(180deg, #1a2a4a, #15233f); border:none; transition:0.2s; }
+    button:hover { transform:translateY(-2px); background:linear-gradient(180deg,#20325a,#1b2a4d); }
+    table { width:100%; border-collapse:collapse; margin-top:15px; }
+    th, td { font-size:13px; text-align:left; padding:10px; border-bottom:1px solid #1c2946; }
+    th { background:#101a30; }
+    .hint { font-size:12px; color:#8aa3ce; margin-top:6px; }
+    .status-Pending { color:#ffcf5a; }
+    .status-In\ Progress { color:#6aa1ff; }
+    .status-Resolved { color:#3ccf91; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
+      <h1>🙋 Customer Ticket Portal</h1>
+      <button onclick="window.location.href='Shine Page.html'" style="width:auto;padding:8px 14px;border-radius:8px;background:#20325a;color:#fff;border:none;">🏠 Back to Main</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Raise Ticket -->
+    <section class="card">
+      <h2>🎫 Raise a Complaint</h2>
+      <label>Bill Number</label>
+      <input id="tBillNumber" placeholder="BILL12345" />
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1">
+          <label>Company ID</label>
+          <input id="tCompanyId" placeholder="C001" />
+        </div>
+        <div style="flex:1">
+          <label>Product ID</label>
+          <input id="tProductId" placeholder="P123" />
+        </div>
+      </div>
+      <label>Your Name</label>
+      <input id="tUserName" placeholder="Ravi Kumar" />
+      <label>Your Email</label>
+      <input id="tUserEmail" placeholder="ravi@example.com" />
+      <label>Issue Description</label>
+      <textarea id="tIssue" placeholder="Describe your problem..."></textarea>
+      <button id="addTicket">🚀 Submit Ticket</button>
+      <div id="ticketMsg" class="hint"></div>
+    </section>
+
+    <!-- User Tickets -->
+    <section class="card">
+      <h2>📋 My Tickets</h2>
+      
+      <!-- Debug Controls -->
+      <div style="margin-bottom: 15px; padding: 10px; background: #0c1426; border-radius: 8px; border: 1px solid #223154;">
+        <small style="color: #8aa3ce;">Debug Controls:</small>
+        <button onclick="forceRefreshTickets()" style="width: auto; padding: 6px 12px; margin: 5px; font-size: 12px; background: #20325a;">🔄 Force Refresh</button>
+        <button onclick="checkListeners()" style="width: auto; padding: 6px 12px; margin: 5px; font-size: 12px; background: #1f66e5;">🔍 Check Listeners</button>
+        <button onclick="showAllTicketsInDatabase()" style="width: auto; padding: 6px 12px; margin: 5px; font-size: 12px; background: #dc3545;">� Show ALL Tickets</button>
+        <span id="listenerStatus" style="color: #6aa1ff; font-size: 12px; margin-left: 10px;"></span>
+      </div>
+      
+      <label>Search by Ticket ID (optional)</label>
+      <input id="searchTicketId" placeholder="Enter Ticket ID (e.g. TKT1698765432123)" style="margin-bottom: 10px;" />
+      <button id="searchTicket" style="width: auto; padding: 8px 15px; margin: 5px 0;">🔍 Search</button>
+      <button id="showAllTickets" style="width: auto; padding: 8px 15px; margin: 5px 0;">📋 Show All</button>
+      <table>
+        <thead>
+          <tr><th>Ticket ID</th><th>Bill</th><th>Product</th><th>Issue</th><th>Status</th><th>Created</th></tr>
+        </thead>
+        <tbody id="ticketsBody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, setDoc, doc, query, where, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTPc2lzhFHP2piME_BMeCwI1VjyZVa0CI",
+      authDomain: "ticket-management-system-1528e.firebaseapp.com",
+      projectId: "ticket-management-system-1528e",
+      storageBucket: "ticket-management-system-1528e.firebasestorage.app",
+      messagingSenderId: "756886145987",
+      appId: "1:756886145987:web:230a4e49124ffd96fecb76",
+      measurementId: "G-ZXG780D7SP"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    console.log("🔥 Firebase initialized successfully!");
+    console.log("📊 Database object:", db);
+
+    const el = (id) => document.getElementById(id);
+    const toast = (id,msg)=>{
+      el(id).textContent=msg;
+      // Longer timeout for ticket ID messages
+      const timeout = msg.includes('Ticket ID') ? 8000 : 3000;
+      setTimeout(()=>el(id).textContent='', timeout);
+    };
+
+    // Raise Ticket - Store in Nested Structure
+    el('addTicket').addEventListener('click', async()=>{
+      const billNumber = el('tBillNumber').value.trim();
+      const companyId = el('tCompanyId').value.trim();
+      const productId = el('tProductId').value.trim();
+      const userName = el('tUserName').value.trim();
+      const userEmail = el('tUserEmail').value.trim();
+      const issueDescription = el('tIssue').value.trim();
+
+      if(!billNumber || !companyId || !userName || !userEmail || !issueDescription) {
+        return toast('ticketMsg','⚠️ Fill all required fields');
+      }
+
+      try {
+        console.log("Creating ticket for company:", companyId); // Debug log
+
+        // Generate unique ticket ID
+        const ticketId = 'TKT' + Date.now() + Math.floor(Math.random() * 1000);
+
+        const ticketData = {
+          ticketId: ticketId, // Add unique ticket ID
+          billNumber: billNumber,
+          companyId: companyId,
+          productId: productId,
+          userName: userName,
+          userEmail: userEmail,
+          issueDescription: issueDescription,
+          status: 'Pending',
+          createdAt: serverTimestamp()
+        };
+
+        console.log("Ticket data:", ticketData); // Debug log
+
+        // 1. Store in nested structure: companies/{companyId}/Ticket Record/{ticketId}
+        const companyDocRef = doc(db, "companies", companyId);
+        const ticketRecordCollection = collection(companyDocRef, "Ticket Record");
+        await setDoc(doc(ticketRecordCollection, ticketId), ticketData);
+        
+        console.log("✅ Nested ticket created with ID:", ticketId); // Debug log
+
+        // 2. Also store in regular tickets collection for user tracking
+        await setDoc(doc(collection(db, 'tickets'), ticketId), ticketData);
+        
+        console.log("✅ Regular ticket also created"); // Debug log
+
+        // Clear form
+        ['tBillNumber','tCompanyId','tProductId','tUserName','tUserEmail','tIssue'].forEach(i=>el(i).value='');
+        
+        // Show success message with ticket ID
+        toast('ticketMsg',`🎫 Ticket created successfully! Your Ticket ID: ${ticketId}`);
+
+      } catch(error) {
+        console.error("Error creating ticket:", error); // Debug log
+        toast('ticketMsg','❌ Error submitting ticket: ' + error.message);
+      }
+    });
+
+    // Fetch user's tickets from nested structure
+    const ticketsBody=el('ticketsBody');
+    let username=localStorage.getItem('username')||prompt('Enter your name to view your tickets (try: John Doe, Jane Smith, or Mike Johnson):');
+    if (!username) {
+      username = "Guest User";
+    }
+    localStorage.setItem('username',username);
+    
+    console.log("🔍 Current username for fetching tickets:", username);
+    
+    // Show loading message initially
+    ticketsBody.innerHTML='<tr><td colspan="6">🔄 Loading tickets...</td></tr>';
+
+    // Global variables for managing listeners
+    let nestedListeners = new Map(); // Track nested collection listeners
+    let regularListener = null; // Track regular collection listener
+
+    // Function to display tickets in table
+    function displayTickets(tickets) {
+      ticketsBody.innerHTML='';
+      if(tickets.length === 0) {
+        ticketsBody.innerHTML='<tr><td colspan="6">No tickets found</td></tr>';
+        return;
+      }
+      
+      // Sort by creation date (newest first)
+      tickets.sort((a, b) => {
+        const aDate = a.data.createdAt?.toDate ? a.data.createdAt.toDate() : new Date(0);
+        const bDate = b.data.createdAt?.toDate ? b.data.createdAt.toDate() : new Date(0);
+        return bDate - aDate;
+      });
+      
+      tickets.forEach(ticketInfo => {
+        const t = ticketInfo.data;
+        const created = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleString() : '-';
+        const sourceIcon = ticketInfo.source === 'nested' ? '🏢' : '📝';
+        const companyInfo = t.companyId ? ` (${t.companyId})` : '';
+        
+        // Add visual indicator for recently updated tickets
+        const lastUpdated = t.lastUpdated?.toDate ? t.lastUpdated.toDate() : null;
+        const isRecentlyUpdated = lastUpdated && (Date.now() - lastUpdated.getTime()) < 60000; // Within last minute
+        const updateIndicator = isRecentlyUpdated ? '🔄' : '';
+        
+        ticketsBody.innerHTML += `
+          <tr style="background: ${ticketInfo.source === 'nested' ? '#0f1a2e' : '#121a2b'}; ${isRecentlyUpdated ? 'border-left: 3px solid #6aa1ff;' : ''}">
+            <td><strong>${t.ticketId || ticketInfo.id}</strong> ${sourceIcon}${updateIndicator}</td>
+            <td>${t.billNumber}${companyInfo}</td>
+            <td>${t.productId}</td>
+            <td>${t.issueDescription}</td>
+            <td class='status-${t.status.replaceAll(' ','\\ ')}'><strong>${t.status}</strong></td>
+            <td>${created}</td>
+          </tr>`;
+      });
+      
+      console.log(`✅ Displayed ${tickets.length} tickets (Regular: ${tickets.filter(t => t.source === 'regular').length}, Nested: ${tickets.filter(t => t.source === 'nested').length})`);
+      
+      // Update debug status
+      document.getElementById('listenerStatus').textContent = 
+        `Showing ${tickets.length} tickets (${tickets.filter(t => t.source === 'nested').length} nested)`;
+    }
+
+    // Function to fetch all user tickets (from both regular and nested collections)
+    function fetchAllUserTickets() {
+      console.log("🎫 Starting ticket fetch for user:", username);
+      
+      // Clean up existing regular listener
+      if (regularListener) {
+        console.log("🧹 Cleaning up previous regular listener");
+        regularListener();
+        regularListener = null;
+      }
+      
+      // Set up persistent listener for regular tickets collection
+      const q = query(collection(db,'tickets'), where('userName','==',username));
+      
+      console.log("🔍 Setting up query for tickets with userName:", username);
+      
+      regularListener = onSnapshot(q,
+        (snap) => {
+          const regularTickets = [];
+          console.log("📥 Received snapshot with", snap.size, "documents");
+          
+          snap.forEach(docSnap => {
+            const data = docSnap.data();
+            console.log("🎫 Found ticket:", docSnap.id, "with userName:", data.userName);
+            regularTickets.push({
+              id: docSnap.id,
+              data: data,
+              source: 'regular'
+            });
+          });
+          
+          console.log("🔄 Regular tickets updated:", regularTickets.length);
+          
+          // Set up or update nested tickets with current regular tickets
+          fetchNestedTickets(regularTickets);
+        },
+        (error) => {
+          console.error('❌ Error fetching regular tickets:', error);
+          ticketsBody.innerHTML='<tr><td colspan="6">❌ Error loading tickets: ' + error.message + '</td></tr>';
+        }
+      );
+    }
+    
+    // Function to show ALL tickets (for debugging)
+    window.showAllTicketsInDatabase = async function() {
+      try {
+        console.log("🔍 Fetching ALL tickets from database for debugging...");
+        ticketsBody.innerHTML='<tr><td colspan="6">🔄 Loading all tickets...</td></tr>';
+        
+        const allTicketsSnapshot = await getDocs(collection(db, 'tickets'));
+        console.log("📊 Total tickets in database:", allTicketsSnapshot.size);
+        
+        const allTickets = [];
+        allTicketsSnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          console.log("🎫 Ticket ID:", docSnap.id, "Username:", data.userName, "Status:", data.status);
+          allTickets.push({
+            id: docSnap.id,
+            data: data,
+            source: 'regular'
+          });
+        });
+        
+        if (allTickets.length === 0) {
+          ticketsBody.innerHTML='<tr><td colspan="6">No tickets found in database</td></tr>';
+          toast('ticketMsg', '⚠️ No tickets exist in Firebase database');
+        } else {
+          displayTickets(allTickets);
+          toast('ticketMsg', `📊 Showing ALL ${allTickets.length} tickets from database`);
+        }
+        
+      } catch (error) {
+        console.error("Error fetching all tickets:", error);
+        ticketsBody.innerHTML='<tr><td colspan="6">❌ Error: ' + error.message + '</td></tr>';
+        toast('ticketMsg', '❌ Error fetching tickets: ' + error.message);
+      }
+    };
+
+    // Function to fetch tickets from nested collections
+    async function fetchNestedTickets(regularTickets = []) {
+      try {
+        console.log("🔍 Setting up nested ticket listeners for user:", username);
+        
+        // Clean up existing nested listeners
+        nestedListeners.forEach((unsubscribe, companyId) => {
+          console.log(`🧹 Cleaning up listener for company: ${companyId}`);
+          unsubscribe();
+        });
+        nestedListeners.clear();
+        
+        // Get all companies
+        const companiesRef = collection(db, "companies");
+        const companiesSnapshot = await getDocs(companiesRef);
+        
+        console.log("📊 Found companies:", companiesSnapshot.size);
+        
+        if (companiesSnapshot.size === 0) {
+          displayTickets(regularTickets);
+          return;
+        }
+        
+        // Shared nested tickets array
+        let allNestedTickets = [];
+        
+        companiesSnapshot.forEach((companyDoc) => {
+          const companyId = companyDoc.id;
+          console.log(`🏢 Setting up listener for company: ${companyId}`);
+          
+          // Query tickets for this user in this company's nested collection
+          const ticketRecordRef = collection(companyDoc.ref, "Ticket Record");
+          const userTicketsQuery = query(ticketRecordRef, where('userName', '==', username));
+          
+          // Set up persistent real-time listener for each company
+          const unsubscribe = onSnapshot(userTicketsQuery, 
+            (snapshot) => {
+              console.log(`🔄 REAL-TIME UPDATE from company ${companyId}: ${snapshot.size} tickets`);
+              
+              // Remove old tickets from this specific company
+              allNestedTickets = allNestedTickets.filter(t => t.data.companyId !== companyId);
+              
+              // Add new/updated tickets from this company
+              const companyTickets = [];
+              snapshot.forEach(ticketDoc => {
+                const ticketData = ticketDoc.data();
+                console.log(`🎫 Ticket ${ticketDoc.id} status: ${ticketData.status}`);
+                
+                companyTickets.push({
+                  id: ticketDoc.id,
+                  data: { 
+                    ...ticketData, 
+                    companyId,
+                    lastUpdated: ticketData.lastUpdated || ticketData.createdAt
+                  },
+                  source: 'nested'
+                });
+              });
+              
+              allNestedTickets.push(...companyTickets);
+              
+              // Combine with regular tickets and display immediately
+              const allTickets = [...regularTickets, ...allNestedTickets];
+              
+              // Sort by last updated time (most recent first)
+              allTickets.sort((a, b) => {
+                const aTime = a.data.lastUpdated?.toDate ? a.data.lastUpdated.toDate() : new Date(0);
+                const bTime = b.data.lastUpdated?.toDate ? b.data.lastUpdated.toDate() : new Date(0);
+                return bTime - aTime;
+              });
+              
+              displayTickets(allTickets);
+              
+              console.log(`✅ DISPLAY UPDATED with ${allTickets.length} total tickets (Regular: ${regularTickets.length}, Nested: ${allNestedTickets.length})`);
+              
+              // Show toast notification for real-time updates
+              if (snapshot.docChanges().length > 0) {
+                const changes = snapshot.docChanges();
+                changes.forEach(change => {
+                  if (change.type === 'modified') {
+                    const ticketData = change.doc.data();
+                    console.log(`📢 Status changed for ticket ${change.doc.id}: ${ticketData.status}`);
+                    toast('ticketMsg', `🔄 Ticket ${ticketData.ticketId || change.doc.id} status updated to: ${ticketData.status}`, 'info');
+                  }
+                });
+              }
+            },
+            (error) => {
+              console.error(`❌ Error listening to company ${companyId}:`, error);
+            }
+          );
+          
+          // Store unsubscribe function
+          nestedListeners.set(companyId, unsubscribe);
+        });
+        
+        console.log(`🎯 Set up ${nestedListeners.size} ACTIVE real-time listeners for nested collections`);
+        
+      } catch (error) {
+        console.error('❌ Error setting up nested ticket listeners:', error);
+        // Still display regular tickets if nested fetch fails
+        displayTickets(regularTickets);
+      }
+    }
+
+    // Function to search specific ticket by ID (from both regular and nested collections)
+    async function searchTicketById(ticketId) {
+      try {
+        console.log("🔍 Searching for ticket ID:", ticketId);
+        
+        // Search in regular tickets collection
+        const q = query(collection(db,'tickets'), where('ticketId','==',ticketId), where('userName','==',username));
+        
+        onSnapshot(q,(snap)=>{
+          const regularTickets = [];
+          snap.forEach(docSnap=>{
+            regularTickets.push({
+              id: docSnap.id,
+              data: docSnap.data(),
+              source: 'regular'
+            });
+          });
+          
+          console.log("Found regular tickets with ID:", regularTickets.length);
+          
+          // Also search in nested collections
+          searchNestedTicketsById(ticketId, regularTickets);
+          
+        }, (error)=>{
+          console.error('Error searching regular tickets:', error);
+          toast('ticketMsg', '❌ Error searching tickets: ' + error.message);
+        });
+        
+      } catch (error) {
+        console.error('Error in search:', error);
+        toast('ticketMsg', '❌ Search failed: ' + error.message);
+      }
+    }
+
+    // Function to search tickets in nested collections by ID
+    async function searchNestedTicketsById(ticketId, regularTickets = []) {
+      try {
+        console.log("🏢 Searching nested collections for ticket:", ticketId);
+        
+        // Get all companies
+        const companiesRef = collection(db, "companies");
+        const companiesSnapshot = await getDocs(companiesRef);
+        
+        let allNestedTickets = [];
+        let companiesChecked = 0;
+        const totalCompanies = companiesSnapshot.size;
+        
+        if (totalCompanies === 0) {
+          if (regularTickets.length === 0) {
+            toast('ticketMsg', `⚠️ No ticket found with ID: ${ticketId}`);
+          }
+          displayTickets(regularTickets);
+          return;
+        }
+        
+        for (const companyDoc of companiesSnapshot.docs) {
+          const companyId = companyDoc.id;
+          
+          // Query tickets by ID for this user in this company's nested collection
+          const ticketRecordRef = collection(companyDoc.ref, "Ticket Record");
+          const ticketQuery = query(ticketRecordRef, 
+            where('ticketId', '==', ticketId), 
+            where('userName', '==', username)
+          );
+          
+          // Use onSnapshot for real-time updates
+          onSnapshot(ticketQuery, (snapshot) => {
+            const companyTickets = [];
+            snapshot.forEach(ticketDoc => {
+              companyTickets.push({
+                id: ticketDoc.id,
+                data: { ...ticketDoc.data(), companyId },
+                source: 'nested'
+              });
+            });
+            
+            if (companyTickets.length > 0) {
+              console.log(`🎫 Found ticket in company ${companyId}`);
+            }
+            
+            // Update nested tickets for this company
+            allNestedTickets = allNestedTickets.filter(t => !t.data.companyId || t.data.companyId !== companyId);
+            allNestedTickets.push(...companyTickets);
+            
+            companiesChecked++;
+            
+            // Display results when all companies are checked
+            if (companiesChecked >= totalCompanies) {
+              const allTickets = [...regularTickets, ...allNestedTickets];
+              
+              if (allTickets.length === 0) {
+                toast('ticketMsg', `⚠️ No ticket found with ID: ${ticketId}`);
+              } else {
+                toast('ticketMsg', `✅ Found ${allTickets.length} ticket(s) with ID: ${ticketId}`);
+              }
+              
+              displayTickets(allTickets);
+            }
+          });
+        }
+        
+      } catch (error) {
+        console.error('Error searching nested tickets:', error);
+        if (regularTickets.length === 0) {
+          toast('ticketMsg', '❌ Search failed: ' + error.message);
+        }
+        displayTickets(regularTickets);
+      }
+    }
+
+    // Event listeners for search functionality
+    el('searchTicket').addEventListener('click', () => {
+      const ticketId = el('searchTicketId').value.trim();
+      if (!ticketId) {
+        toast('ticketMsg', '⚠️ Please enter a Ticket ID to search');
+        return;
+      }
+      searchTicketById(ticketId);
+    });
+
+    el('showAllTickets').addEventListener('click', () => {
+      el('searchTicketId').value = '';
+      fetchAllUserTickets();
+    });
+
+    // Debug functions for troubleshooting real-time updates
+    window.forceRefreshTickets = function() {
+      console.log("🔄 FORCE REFRESH triggered by user");
+      toast('ticketMsg', '🔄 Force refreshing tickets...', 'info');
+      
+      // Clear current listeners first
+      if (regularListener) {
+        regularListener();
+        regularListener = null;
+      }
+      nestedListeners.forEach((unsubscribe) => unsubscribe());
+      nestedListeners.clear();
+      
+      // Restart ticket fetching
+      fetchAllUserTickets();
+    };
+
+    window.checkListeners = function() {
+      const regularActive = regularListener !== null;
+      const nestedCount = nestedListeners.size;
+      
+      const status = `Regular: ${regularActive ? '✅' : '❌'}, Nested: ${nestedCount} active`;
+      document.getElementById('listenerStatus').textContent = status;
+      
+      console.log("🔍 Listener Status Check:");
+      console.log("- Regular listener active:", regularActive);
+      console.log("- Nested listeners count:", nestedCount);
+      console.log("- Nested listeners for companies:", Array.from(nestedListeners.keys()));
+      
+      toast('ticketMsg', `Listeners: ${status}`, 'info');
+    };
+    
+    // Debug function to check if there's any data in database
+    window.checkDatabaseData = async function() {
+      try {
+        console.log("🔍 Checking database for any data...");
+        
+        // Check tickets collection
+        const ticketsSnapshot = await getDocs(collection(db, 'tickets'));
+        console.log(`📝 Total tickets in database: ${ticketsSnapshot.size}`);
+        
+        // Check companies collection
+        const companiesSnapshot = await getDocs(collection(db, 'companies'));
+        console.log(`🏢 Total companies in database: ${companiesSnapshot.size}`);
+        
+        if (ticketsSnapshot.size === 0 && companiesSnapshot.size === 0) {
+          toast('ticketMsg', '⚠️ No data found in database. Please add test data first!', 'info');
+        } else {
+          toast('ticketMsg', `📊 Found ${ticketsSnapshot.size} tickets and ${companiesSnapshot.size} companies`, 'info');
+        }
+        
+      } catch (error) {
+        console.error("Error checking database:", error);
+        toast('ticketMsg', '❌ Error checking database: ' + error.message, 'info');
+      }
+    };
+
+    // Initialize: Fetch all tickets
+    fetchAllUserTickets();
+    
+    // Auto-check listeners every 30 seconds
+    setInterval(checkListeners, 30000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🏢 Company Dashboard - Ticket Management</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0a1222;
+      color: white;
+      margin: 0;
+    }
+    header {
+      background: #111b33;
+      padding: 15px 25px;
+      border-bottom: 2px solid #1d2b4a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h1 { margin: 0; font-size: 22px; color: #9cc4ff; }
+    button.back {
+      background: #20325a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 15px;
+      cursor: pointer;
+    }
+    button.back:hover { background: #2c437a; }
+    main { padding: 20px; }
+    section {
+      background: #121c36;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #b0c3e8;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 5px;
+      background: #0e1730;
+      color: white;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      border: none;
+      background: #1f66e5;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover { background: #2c7bff; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #223b6f;
+    }
+    th { background: #0f1b36; }
+    .status-select {
+      background: #1b2b52;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🏢 Company Dashboard</h1>
+    <button class="back" onclick="window.location.href='Shine Page.html'">🏠 Back</button>
+  </header>
+
+  <main>
+    <!-- Company Statistics Section -->
+    <section>
+      <h2>📊 Company Statistics</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+        <div style="background: #0f1b36; padding: 15px; border-radius: 8px; text-align: center;">
+          <h3 style="margin: 0; color: #6aa1ff; font-size: 18px;" id="totalProducts">0</h3>
+          <p style="margin: 5px 0 0 0; color: #b0c3e8; font-size: 12px;">Products Sold</p>
+        </div>
+        <div style="background: #0f1b36; padding: 15px; border-radius: 8px; text-align: center;">
+          <h3 style="margin: 0; color: #ffcf5a; font-size: 18px;" id="totalTickets">0</h3>
+          <p style="margin: 5px 0 0 0; color: #b0c3e8; font-size: 12px;">Total Tickets</p>
+        </div>
+        <div style="background: #0f1b36; padding: 15px; border-radius: 8px; text-align: center;">
+          <h3 style="margin: 0; color: #ff6b6b; font-size: 18px;" id="pendingTickets">0</h3>
+          <p style="margin: 5px 0 0 0; color: #b0c3e8; font-size: 12px;">Pending Tickets</p>
+        </div>
+        <div style="background: #0f1b36; padding: 15px; border-radius: 8px; text-align: center;">
+          <h3 style="margin: 0; color: #3ccf91; font-size: 18px;" id="resolvedTickets">0</h3>
+          <p style="margin: 5px 0 0 0; color: #b0c3e8; font-size: 12px;">Resolved Tickets</p>
+        </div>
+      </div>
+      <div style="background: #0f1b36; padding: 10px; border-radius: 8px;">
+        <p style="margin: 0; color: #8aa3ce; font-size: 12px; text-align: center;" id="lastUpdated">Last updated: Never</p>
+      </div>
+    </section>
+
+    <!-- Product Upload Section -->
+    <section>
+      <h2>📦 Upload Product</h2>
+      <label>Company ID</label>
+      <input id="companyId" placeholder="e.g. C001" onchange="updateCompanyId()">
+      <label>Product ID</label>
+      <input id="productId" placeholder="e.g. P999">
+      <label>Product Name</label>
+      <input id="productName" placeholder="e.g. Air Conditioner 1.5 Ton">
+      <button id="uploadProduct">Add Product</button>
+      <p id="msg"></p>
+    </section>
+
+    <!-- User Purchase Entry Section -->
+    <section>
+      <h2>🧾 Add User Purchase & Company Info</h2>
+
+      <!-- Company Details -->
+      <label>Company Name</label>
+      <input id="companyName" placeholder="e.g. Dixon" />
+      <label>Bill Number</label>
+      <input id="billNumber" placeholder="e.g. BILL98765" />
+
+      <!-- User Details -->
+      <label>Buyer Name</label>
+      <input id="buyerName" placeholder="e.g. Ravi Kumar" />
+      <label>Buyer Email</label>
+      <input id="buyerEmail" placeholder="e.g. ravi@example.com" />
+      <label>Contact Number</label>
+      <input id="buyerContact" placeholder="e.g. 9876543210" />
+      <label>Address</label>
+      <textarea id="buyerAddress" placeholder="e.g. Delhi, India"></textarea>
+
+      <!-- Product Details -->
+      <label>Product ID</label>
+      <input id="billProductId" placeholder="e.g. P123" />
+      <label>Product Name</label>
+      <input id="billProductName" placeholder="e.g. LED TV 42 Inch" />
+
+      <button id="saveNestedData">💾 Save Purchase Info</button>
+      <p id="nestedMsg"></p>
+    </section>
+
+    <!-- All Purchases Section -->
+    <section>
+      <h2>🛍️ All Purchases</h2>
+      <p id="purchasesMsg" style="color: #9cc4ff; margin: 5px 0;"></p>
+      <table id="purchasesTable">
+        <thead>
+          <tr><th>Bill Number</th><th>Buyer</th><th>Email</th><th>Product</th><th>Contact</th><th>Date</th></tr>
+        </thead>
+        <tbody id="purchasesBody"></tbody>
+      </table>
+    </section>
+
+    <!-- Detailed Analytics Section -->
+    <section>
+      <h2>📈 Detailed Analytics</h2>
+      <div style="background: #0f1b36; padding: 15px; border-radius: 8px;">
+        <h3 style="margin: 0 0 10px 0; color: #9cc4ff;">Ticket Resolution Rate</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+          <div style="text-align: center;">
+            <div style="color: #ffcf5a; font-weight: bold; font-size: 16px;" id="resolutionRate">0%</div>
+            <div style="color: #b0c3e8; font-size: 12px;">Resolution Rate</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="color: #6aa1ff; font-weight: bold; font-size: 16px;" id="inProgressTickets">0</div>
+            <div style="color: #b0c3e8; font-size: 12px;">In Progress</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="color: #ff6b6b; font-weight: bold; font-size: 16px;" id="ticketPerProduct">0</div>
+            <div style="color: #b0c3e8; font-size: 12px;">Tickets per Product</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- All Companies Analytics Section -->
+    <section>
+      <h2>🏢 All Companies Analytics</h2>
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <button id="refreshAllCompanies" style="width: auto; padding: 8px 15px; background: #1f66e5;">🔄 Refresh Data</button>
+        <button id="viewTopCompanies" style="width: auto; padding: 8px 15px; background: #20325a;">🏆 Top Performers</button>
+      </div>
+      <div id="allCompaniesStats" style="background: #0f1b36; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;" id="companiesGrid">
+          <div style="text-align: center; color: #8aa3ce;">Loading companies data...</div>
+        </div>
+      </div>
+      <table id="allCompaniesTable">
+        <thead>
+          <tr>
+            <th>Company ID</th>
+            <th>Company Name</th>
+            <th>Products Sold</th>
+            <th>Total Tickets</th>
+            <th>Pending</th>
+            <th>Resolved</th>
+            <th>Resolution %</th>
+          </tr>
+        </thead>
+        <tbody id="allCompaniesBody"></tbody>
+      </table>
+    </section>
+
+    <!-- Tickets Section -->
+    <section>
+      <h2>🎫 Tickets (Nested Firestore Structure)</h2>
+      <p id="statusMsg" style="color: #9cc4ff; margin: 5px 0;"></p>
+      <table id="ticketTable">
+        <thead>
+          <tr><th>Bill</th><th>User</th><th>Email</th><th>Product</th><th>Status</th><th>Update</th></tr>
+        </thead>
+        <tbody id="ticketBody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, setDoc, serverTimestamp, getDocs
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+    // ✅ Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTPc2lzhFHP2piME_BMeCwI1VjyZVa0CI",
+      authDomain: "ticket-management-system-1528e.firebaseapp.com",
+      projectId: "ticket-management-system-1528e",
+      storageBucket: "ticket-management-system-1528e.firebasestorage.app",
+      messagingSenderId: "756886145987",
+      appId: "1:756886145987:web:230a4e49124ffd96fecb76",
+      measurementId: "G-ZXG780D7SP"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    console.log("✅ Firebase connected successfully!");
+
+    // ✅ Toast function for notifications
+    function showToast(message, type = "info") {
+      const toast = document.createElement("div");
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        z-index: 10000;
+        background: ${type === "success" ? "#3ccf91" : type === "error" ? "#ff6b6b" : "#6aa1ff"};
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    // ✅ Get Company ID
+    let companyId = localStorage.getItem("companyId");
+    if (!companyId) {
+      const promptResult = prompt("Enter your Company ID (e.g., C001):");
+      companyId = promptResult ? promptResult.trim() : "";
+      if (companyId) {
+        localStorage.setItem("companyId", companyId);
+      } else {
+        alert("⚠️ Company ID is required. Please refresh and try again.");
+        throw new Error("Company ID is required");
+      }
+    }
+    document.getElementById("companyId").value = companyId;
+
+    // ✅ Function to update Company ID when input changes
+    window.updateCompanyId = function() {
+      const newCompanyId = document.getElementById("companyId").value.trim();
+      if (newCompanyId) {
+        companyId = newCompanyId;
+        localStorage.setItem("companyId", companyId);
+        console.log("Company ID updated to:", companyId);
+        
+        // Refresh both listeners with new company ID
+        setupTicketListener();
+        setupPurchasesListener();
+      }
+    }
+
+    // ✅ Setup ticket listener function
+    function setupTicketListener() {
+      const ticketBody = document.getElementById("ticketBody");
+      const companyDocRef = doc(db, "companies", companyId);
+      const ticketRecordCollection = collection(companyDocRef, "Ticket Record");
+
+      onSnapshot(ticketRecordCollection, (snapshot) => {
+        ticketBody.innerHTML = "";
+        const ticketData = [];
+        
+        if (snapshot.empty) {
+          ticketBody.innerHTML = "<tr><td colspan='6'>⚠️ No tickets found yet.</td></tr>";
+          updateStatistics(null, []); // Update with 0 tickets
+          return;
+        }
+        
+        snapshot.forEach((docSnap) => {
+          const t = docSnap.data();
+          ticketData.push(t); // Collect ticket data for statistics
+          
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${t.billNumber || "-"}</td>
+            <td>${t.userName || "-"}</td>
+            <td>${t.userEmail || "-"}</td>
+            <td>${t.productId || "-"}</td>
+            <td>
+              <select class='status-select' data-id='${docSnap.id}'>
+                <option ${t.status === "Pending" ? "selected" : ""}>Pending</option>
+                <option ${t.status === "In Progress" ? "selected" : ""}>In Progress</option>
+                <option ${t.status === "Resolved" ? "selected" : ""}>Resolved</option>
+              </select>
+            </td>
+            <td><button data-id='${docSnap.id}' class='updateBtn'>Update</button></td>`;
+          ticketBody.appendChild(tr);
+        });
+
+        // Update statistics with ticket data
+        updateStatistics(null, ticketData);
+        
+      }, (error) => {
+        console.error("Error listening to tickets:", error);
+        ticketBody.innerHTML = "<tr><td colspan='6'>❌ Error loading tickets: " + error.message + "</td></tr>";
+      });
+    }
+
+    // ✅ Setup purchases listener function
+    function setupPurchasesListener() {
+      const purchasesBody = document.getElementById("purchasesBody");
+      const companyDocRef = doc(db, "companies", companyId);
+      const purchasesCollection = collection(companyDocRef, "Purchases");
+
+      onSnapshot(purchasesCollection, (snapshot) => {
+        purchasesBody.innerHTML = "";
+        if (snapshot.empty) {
+          purchasesBody.innerHTML = "<tr><td colspan='6'>⚠️ No purchases found yet.</td></tr>";
+          updateStatistics(0, null); // Update with 0 products
+          return;
+        }
+        
+        console.log("Found", snapshot.size, "purchases"); // Debug log
+        
+        snapshot.forEach((docSnap) => {
+          const p = docSnap.data();
+          const tr = document.createElement("tr");
+          const createdDate = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleDateString() : '-';
+          
+          tr.innerHTML = `
+            <td>${p.billNumber || "-"}</td>
+            <td>${p.buyerName || "-"}</td>
+            <td>${p.buyerEmail || "-"}</td>
+            <td>${p.productName || "-"} (${p.productId || "-"})</td>
+            <td>${p.buyerContact || "-"}</td>
+            <td>${createdDate}</td>`;
+          purchasesBody.appendChild(tr);
+        });
+
+        // Update statistics with product count
+        updateStatistics(snapshot.size, null);
+        
+      }, (error) => {
+        console.error("Error listening to purchases:", error);
+        purchasesBody.innerHTML = "<tr><td colspan='6'>❌ Error loading purchases: " + error.message + "</td></tr>";
+      });
+    }
+
+    // ✅ Function to update statistics
+    function updateStatistics(productCount, ticketData) {
+      // Update product count if provided
+      if (productCount !== null) {
+        document.getElementById("totalProducts").textContent = productCount;
+      }
+      
+      // Update ticket statistics if provided
+      if (ticketData) {
+        const pending = ticketData.filter(t => t.status === "Pending").length;
+        const inProgress = ticketData.filter(t => t.status === "In Progress").length;
+        const resolved = ticketData.filter(t => t.status === "Resolved").length;
+        const total = ticketData.length;
+        
+        document.getElementById("totalTickets").textContent = total;
+        document.getElementById("pendingTickets").textContent = pending;
+        document.getElementById("resolvedTickets").textContent = resolved;
+        document.getElementById("inProgressTickets").textContent = inProgress;
+        
+        // Calculate resolution rate
+        const resolutionRate = total > 0 ? Math.round((resolved / total) * 100) : 0;
+        document.getElementById("resolutionRate").textContent = resolutionRate + "%";
+        
+        // Calculate tickets per product
+        const currentProductCount = parseInt(document.getElementById("totalProducts").textContent) || 1;
+        const ticketsPerProduct = currentProductCount > 0 ? (total / currentProductCount).toFixed(1) : "0";
+        document.getElementById("ticketPerProduct").textContent = ticketsPerProduct;
+        
+        // Update resolution rate color based on performance
+        const resolutionElement = document.getElementById("resolutionRate");
+        if (resolutionRate >= 80) {
+          resolutionElement.style.color = "#3ccf91"; // Green for good
+        } else if (resolutionRate >= 50) {
+          resolutionElement.style.color = "#ffcf5a"; // Yellow for average
+        } else {
+          resolutionElement.style.color = "#ff6b6b"; // Red for poor
+        }
+      }
+      
+      // Update timestamp
+      document.getElementById("lastUpdated").textContent = "Last updated: " + new Date().toLocaleString();
+    }
+
+    // ✅ Function to fetch all companies analytics
+    async function fetchAllCompaniesAnalytics() {
+      try {
+        console.log("🔍 Fetching all companies data...");
+        showToast("🔍 Loading companies data...", "info");
+        
+        const companiesCollection = collection(db, "companies");
+        const companiesSnapshot = await getDocs(companiesCollection);
+        
+        console.log("📊 Found companies:", companiesSnapshot.size);
+        
+        const companiesData = [];
+        
+        for (const companyDoc of companiesSnapshot.docs) {
+          const companyId = companyDoc.id;
+          const companyData = companyDoc.data();
+          
+          console.log(`🏢 Processing company: ${companyId}`);
+          
+          // Fetch purchases for this company
+          const purchasesCollection = collection(companyDoc.ref, "Purchases");
+          const purchasesSnapshot = await getDocs(purchasesCollection);
+          const purchasesCount = purchasesSnapshot.size;
+          
+          // Fetch tickets for this company
+          const ticketsCollection = collection(companyDoc.ref, "Ticket Record");
+          const ticketsSnapshot = await getDocs(ticketsCollection);
+          
+          let pending = 0, resolved = 0, inProgress = 0;
+          
+          ticketsSnapshot.forEach(ticketDoc => {
+            const ticket = ticketDoc.data();
+            switch(ticket.status) {
+              case "Pending": pending++; break;
+              case "Resolved": resolved++; break;
+              case "In Progress": inProgress++; break;
+            }
+          });
+          
+          const totalTickets = ticketsSnapshot.size;
+          const resolutionRate = totalTickets > 0 ? Math.round((resolved / totalTickets) * 100) : 0;
+          
+          companiesData.push({
+            companyId,
+            companyName: companyData.companyName || `Company ${companyId}`,
+            purchasesCount,
+            totalTickets,
+            pending,
+            resolved,
+            inProgress,
+            resolutionRate
+          });
+          
+          console.log(`✅ ${companyId}: ${purchasesCount} purchases, ${totalTickets} tickets`);
+        }
+        
+        console.log("🎯 Total companies processed:", companiesData.length);
+        displayAllCompaniesData(companiesData);
+        showToast(`✅ Loaded ${companiesData.length} companies`, "success");
+        
+      } catch (error) {
+        console.error("❌ Error fetching companies analytics:", error);
+        document.getElementById("companiesGrid").innerHTML = 
+          '<div style="color: #ff6b6b;">❌ Error loading companies data</div>';
+        showToast("❌ Error loading companies data", "error");
+      }
+    }
+
+    // ✅ Function to display all companies data
+    function displayAllCompaniesData(companiesData) {
+      // Update grid cards
+      const companiesGrid = document.getElementById("companiesGrid");
+      companiesGrid.innerHTML = "";
+      
+      if (companiesData.length === 0) {
+        companiesGrid.innerHTML = '<div style="color: #8aa3ce;">No companies found</div>';
+        return;
+      }
+      
+      // Sort by purchases count descending
+      companiesData.sort((a, b) => b.purchasesCount - a.purchasesCount);
+      
+      companiesData.forEach(company => {
+        const card = document.createElement("div");
+        card.style.cssText = "background: #121c36; padding: 15px; border-radius: 8px; border: 1px solid #1e2a44;";
+        
+        const resolutionColor = company.resolutionRate >= 80 ? "#3ccf91" : 
+                               company.resolutionRate >= 50 ? "#ffcf5a" : "#ff6b6b";
+        
+        card.innerHTML = `
+          <h4 style="margin: 0 0 10px 0; color: #9cc4ff;">${company.companyName}</h4>
+          <div style="color: #b0c3e8; font-size: 12px; margin-bottom: 5px;">ID: ${company.companyId}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+            <span style="color: #b0c3e8; font-size: 12px;">Products:</span>
+            <span style="color: #6aa1ff; font-weight: bold;">${company.purchasesCount}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+            <span style="color: #b0c3e8; font-size: 12px;">Tickets:</span>
+            <span style="color: #ffcf5a; font-weight: bold;">${company.totalTickets}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+            <span style="color: #b0c3e8; font-size: 12px;">Resolution:</span>
+            <span style="color: ${resolutionColor}; font-weight: bold;">${company.resolutionRate}%</span>
+          </div>
+        `;
+        companiesGrid.appendChild(card);
+      });
+      
+      // Update table
+      const allCompaniesBody = document.getElementById("allCompaniesBody");
+      allCompaniesBody.innerHTML = "";
+      
+      companiesData.forEach(company => {
+        const row = document.createElement("tr");
+        const resolutionColor = company.resolutionRate >= 80 ? "#3ccf91" : 
+                               company.resolutionRate >= 50 ? "#ffcf5a" : "#ff6b6b";
+        
+        row.innerHTML = `
+          <td><strong>${company.companyId}</strong></td>
+          <td>${company.companyName}</td>
+          <td style="color: #6aa1ff; font-weight: bold;">${company.purchasesCount}</td>
+          <td style="color: #ffcf5a; font-weight: bold;">${company.totalTickets}</td>
+          <td style="color: #ff6b6b;">${company.pending}</td>
+          <td style="color: #3ccf91;">${company.resolved}</td>
+          <td style="color: ${resolutionColor}; font-weight: bold;">${company.resolutionRate}%</td>
+        `;
+        allCompaniesBody.appendChild(row);
+      });
+    }
+
+    // ✅ Upload Product
+    document.getElementById("uploadProduct").addEventListener("click", async () => {
+      const productId = document.getElementById("productId").value.trim();
+      const productName = document.getElementById("productName").value.trim();
+      
+      // Get current company ID from input
+      const currentCompanyId = document.getElementById("companyId").value.trim();
+      
+      if (!currentCompanyId || !productId || !productName) {
+        document.getElementById("msg").textContent = "⚠️ Please fill all fields including Company ID!";
+        return;
+      }
+      
+      try {
+        await addDoc(collection(db, "products"), { 
+          companyId: currentCompanyId, 
+          productId: productId, 
+          productName: productName,
+          createdAt: serverTimestamp()
+        });
+        document.getElementById("msg").textContent = "✅ Product added successfully!";
+        document.getElementById("productId").value = "";
+        document.getElementById("productName").value = "";
+      } catch (error) {
+        document.getElementById("msg").textContent = "❌ Error adding product: " + error.message;
+        console.error("Error adding product:", error);
+      }
+    });
+
+    // ✅ Save User Purchase Info
+    document.getElementById("saveNestedData").addEventListener("click", async () => {
+      const companyName = document.getElementById("companyName").value.trim();
+      const billNumber = document.getElementById("billNumber").value.trim();
+      const buyerName = document.getElementById("buyerName").value.trim();
+      const buyerEmail = document.getElementById("buyerEmail").value.trim();
+      const buyerContact = document.getElementById("buyerContact").value.trim();
+      const buyerAddress = document.getElementById("buyerAddress").value.trim();
+      const productId = document.getElementById("billProductId").value.trim();
+      const productName = document.getElementById("billProductName").value.trim();
+
+      // Get current company ID from input field
+      const currentCompanyId = document.getElementById("companyId").value.trim();
+
+      // Check if companyId exists
+      if (!currentCompanyId) {
+        document.getElementById("nestedMsg").textContent = "❌ Company ID is missing! Please enter Company ID.";
+        return;
+      }
+
+      if (!companyName || !billNumber || !buyerName || !buyerEmail || !buyerContact || !buyerAddress || !productId || !productName) {
+        document.getElementById("nestedMsg").textContent = "⚠️ Please fill all fields!";
+        return;
+      }
+
+      try {
+        console.log("Saving purchase data for company ID:", currentCompanyId); // Debug log
+        
+        const companyDocRef = doc(db, "companies", currentCompanyId);
+
+        // First: Create/Update main company document with basic info (only once)
+        await setDoc(companyDocRef, {
+          companyId: currentCompanyId,
+          companyName: companyName,
+          lastUpdated: serverTimestamp()
+        }, { merge: true });
+
+        // Second: Add purchase details to "Purchases" subcollection (preserves all previous purchases)
+        const purchasesCollection = collection(companyDocRef, "Purchases");
+        
+        const purchaseData = {
+          billNumber: billNumber,
+          buyerName: buyerName,
+          buyerEmail: buyerEmail,
+          buyerContact: buyerContact,
+          buyerAddress: buyerAddress,
+          productId: productId,
+          productName: productName,
+          companyId: currentCompanyId,
+          companyName: companyName,
+          createdAt: serverTimestamp()
+        };
+
+        console.log("Purchase data to save:", purchaseData); // Debug log
+
+        // Use billNumber as document ID to avoid duplicates, or use addDoc for auto-ID
+        await setDoc(doc(purchasesCollection, billNumber), purchaseData);
+
+        console.log("✅ Purchase data saved successfully!"); // Debug log
+        document.getElementById("nestedMsg").textContent = `✅ Purchase details saved! Bill: ${billNumber}`;
+        
+        // Update global companyId
+        companyId = currentCompanyId;
+        localStorage.setItem("companyId", companyId);
+        
+        // Clear form fields
+        ["companyName","billNumber","buyerName","buyerEmail","buyerContact","buyerAddress","billProductId","billProductName"]
+          .forEach(id => document.getElementById(id).value = "");
+
+      } catch (error) {
+        console.error("Error saving purchase data:", error); // Debug log
+        document.getElementById("nestedMsg").textContent = "❌ Error saving data: " + error.message;
+      }
+    });
+
+    // ✅ Initialize both listeners
+    setupTicketListener();
+    setupPurchasesListener();
+
+    // ✅ Update Ticket Status
+    document.addEventListener("click", async (e) => {
+      if (e.target.classList.contains("updateBtn")) {
+        const ticketId = e.target.getAttribute("data-id");
+        const row = e.target.closest("tr");
+        const sel = row.querySelector(".status-select");
+        
+        // Get current company ID
+        const currentCompanyId = document.getElementById("companyId").value.trim();
+        
+        try {
+          const companyDocRef = doc(db, "companies", currentCompanyId);
+          const ticketDocRef = doc(companyDocRef, "Ticket Record", ticketId);
+          await updateDoc(ticketDocRef, { 
+            status: sel.value, 
+            lastUpdated: serverTimestamp() 
+          });
+          
+          // Also update the regular tickets collection
+          try {
+            await updateDoc(doc(db, "tickets", ticketId), { 
+              status: sel.value, 
+              lastUpdated: serverTimestamp() 
+            });
+          } catch(updateError) {
+            console.log("Note: Ticket not found in regular collection for sync update");
+          }
+          
+          document.getElementById("statusMsg").textContent = "✅ Ticket status updated!";
+          setTimeout(() => (document.getElementById("statusMsg").textContent = ""), 3000);
+          
+          // Statistics will auto-update due to onSnapshot listener
+          
+        } catch (err) {
+          document.getElementById("statusMsg").textContent = "❌ Error updating: " + err.message;
+          console.error("Error updating ticket:", err);
+        }
+      }
+    });
+
+    // ✅ Event handlers for analytics buttons
+    function refreshAllCompanies() {
+      fetchAllCompaniesAnalytics();
+    }
+
+    function showTopPerformers() {
+      fetchAllCompaniesAnalytics().then(() => {
+        // Show only top 3 performers based on resolution rate
+        const rows = Array.from(document.querySelectorAll("#allCompaniesBody tr"));
+        const companiesData = rows.map(row => ({
+          row,
+          resolutionRate: parseInt(row.cells[6].textContent) || 0
+        }));
+        
+        companiesData.sort((a, b) => b.resolutionRate - a.resolutionRate);
+        
+        document.getElementById("allCompaniesBody").innerHTML = "";
+        
+        companiesData.slice(0, 3).forEach(({ row }) => {
+          document.getElementById("allCompaniesBody").appendChild(row);
+        });
+        
+        // Show toast
+        showToast("🏆 Top 3 performers shown!", "success");
+      });
+    }
+
+    // ✅ Load all companies analytics on page load
+    window.addEventListener('load', () => {
+      if (companyId) {
+        setTimeout(fetchAllCompaniesAnalytics, 2000); // Load after 2 seconds
+      }
+      
+      // Add event listeners for buttons
+      document.getElementById('refreshAllCompanies')?.addEventListener('click', refreshAllCompanies);
+      document.getElementById('viewTopCompanies')?.addEventListener('click', showTopPerformers);
+    });
+  </script>
+</body>
+</html>

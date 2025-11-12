@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏗️ Nested Firebase Structure - Ticket Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1222, #1a2744);
+            color: white;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #121c36;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h1 {
+            text-align: center;
+            color: #9cc4ff;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #b0c3e8;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #b0c3e8;
+            font-weight: 500;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #223154;
+            border-radius: 8px;
+            background: #0e1730;
+            color: white;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #1f66e5;
+        }
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .save-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #1f66e5, #2c7bff);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        .save-btn:hover {
+            transform: translateY(-2px);
+        }
+        .save-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            display: none;
+        }
+        .message.success {
+            background: rgba(60, 207, 145, 0.2);
+            border: 1px solid #3ccf91;
+            color: #3ccf91;
+        }
+        .message.error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+        }
+        .structure-preview {
+            background: #0f1b36;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1f66e5;
+        }
+        .structure-preview h3 {
+            margin: 0 0 10px 0;
+            color: #9cc4ff;
+            font-size: 16px;
+        }
+        .structure-preview code {
+            color: #b0c3e8;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .back-btn {
+            background: #20325a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover {
+            background: #2c437a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="window.location.href='Shine Page.html'">🏠 Back to Main</button>
+        
+        <h1>🏗️ Nested Firebase Structure</h1>
+        <p class="subtitle">Create companies with nested ticket subcollections</p>
+        
+        <div class="structure-preview">
+            <h3>📋 Expected Firestore Structure:</h3>
+            <code>
+companies/<br>
+&nbsp;&nbsp;└── C001<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── billNumber: "BILL98765"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── buyerName: "Ravi Kumar"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── companyId: "C001"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── companyName: "Dixon"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── productId: "P123"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── productName: "LED TV 42 Inch"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── Ticket Record/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── autoID<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── billNumber: "BILL98765"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── companyId: "C001"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── productId: "P123"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── userName: "Ravi Kumar"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── issueDescription: "TV screen flickering"
+            </code>
+        </div>
+
+        <form id="nestedForm">
+            <div class="form-group">
+                <label for="companyId">Company ID *</label>
+                <input type="text" id="companyId" placeholder="e.g. C001" required>
+            </div>
+
+            <div class="form-group">
+                <label for="companyName">Company Name *</label>
+                <input type="text" id="companyName" placeholder="e.g. Dixon" required>
+            </div>
+
+            <div class="form-group">
+                <label for="billNumber">Bill Number *</label>
+                <input type="text" id="billNumber" placeholder="e.g. BILL98765" required>
+            </div>
+
+            <div class="form-group">
+                <label for="buyerName">Buyer Name *</label>
+                <input type="text" id="buyerName" placeholder="e.g. Ravi Kumar" required>
+            </div>
+
+            <div class="form-group">
+                <label for="productId">Product ID *</label>
+                <input type="text" id="productId" placeholder="e.g. P123" required>
+            </div>
+
+            <div class="form-group">
+                <label for="productName">Product Name *</label>
+                <input type="text" id="productName" placeholder="e.g. LED TV 42 Inch" required>
+            </div>
+
+            <div class="form-group">
+                <label for="issueDescription">Issue Description *</label>
+                <textarea id="issueDescription" placeholder="e.g. TV screen flickering" required></textarea>
+            </div>
+
+            <button type="submit" class="save-btn" id="saveBtn">💾 Save to Nested Structure</button>
+        </form>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <script type="module">
+        // ✅ Firebase Web SDK v10+ ES Module Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            addDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+        // ✅ Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTPc2lzhFHP2piME_BMeCwI1VjyZVa0CI",
+            authDomain: "ticket-management-system-1528e.firebaseapp.com",
+            projectId: "ticket-management-system-1528e",
+            storageBucket: "ticket-management-system-1528e.firebasestorage.app",
+            messagingSenderId: "756886145987",
+            appId: "1:756886145987:web:230a4e49124ffd96fecb76",
+            measurementId: "G-ZXG780D7SP"
+        };
+
+        // ✅ Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        console.log("✅ Firebase connected successfully!");
+
+        // Helper functions
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function clearForm() {
+            document.getElementById('nestedForm').reset();
+        }
+
+        function setLoading(isLoading) {
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = isLoading;
+            saveBtn.textContent = isLoading ? '💾 Saving...' : '💾 Save to Nested Structure';
+        }
+
+        // ✅ Main Save Function - Creates Nested Firestore Structure
+        async function saveToNestedStructure(formData) {
+            try {
+                setLoading(true);
+
+                // Step 1: Create/Update main company document using setDoc()
+                const companyDocRef = doc(db, "companies", formData.companyId);
+                
+                await setDoc(companyDocRef, {
+                    billNumber: formData.billNumber,
+                    buyerName: formData.buyerName,
+                    companyId: formData.companyId,
+                    companyName: formData.companyName,
+                    productId: formData.productId,
+                    productName: formData.productName,
+                    lastUpdated: serverTimestamp()
+                }, { merge: true }); // merge: true allows updating existing documents
+
+                console.log("✅ Company document created/updated:", formData.companyId);
+
+                // Step 2: Add ticket to "Ticket Record" subcollection using addDoc()
+                const ticketRecordRef = collection(companyDocRef, "Ticket Record");
+                
+                const ticketDoc = await addDoc(ticketRecordRef, {
+                    billNumber: formData.billNumber,
+                    companyId: formData.companyId,
+                    productId: formData.productId,
+                    userName: formData.buyerName,
+                    issueDescription: formData.issueDescription,
+                    status: "Pending",
+                    createdAt: serverTimestamp()
+                });
+
+                console.log("✅ Ticket added to subcollection with ID:", ticketDoc.id);
+
+                // Success feedback
+                showMessage(`✅ Success! Data saved in nested structure:\nCompany: ${formData.companyId}\nTicket ID: ${ticketDoc.id}`, 'success');
+                clearForm();
+
+            } catch (error) {
+                console.error("❌ Error saving to nested structure:", error);
+                showMessage(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // ✅ Form Submit Handler
+        document.getElementById('nestedForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Gather form data
+            const formData = {
+                companyId: document.getElementById('companyId').value.trim(),
+                companyName: document.getElementById('companyName').value.trim(),
+                billNumber: document.getElementById('billNumber').value.trim(),
+                buyerName: document.getElementById('buyerName').value.trim(),
+                productId: document.getElementById('productId').value.trim(),
+                productName: document.getElementById('productName').value.trim(),
+                issueDescription: document.getElementById('issueDescription').value.trim()
+            };
+
+            // Validate required fields
+            const requiredFields = Object.keys(formData);
+            const emptyFields = requiredFields.filter(field => !formData[field]);
+            
+            if (emptyFields.length > 0) {
+                showMessage(`⚠️ Please fill in all required fields: ${emptyFields.join(', ')}`, 'error');
+                return;
+            }
+
+            // Save to nested Firestore structure
+            await saveToNestedStructure(formData);
+        });
+
+        // Initialize message
+        showMessage('📝 Fill out the form to create nested structure in Firestore', 'success');
+    </script>
+</body>
+</html>
