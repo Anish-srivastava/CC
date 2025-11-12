@@ -1,0 +1,19 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "No pre-build steps required for static HTML project"
+    build:
+      commands:
+        - echo "Building static HTML project..."
+        - echo "Build completed successfully"
+    postBuild:
+      commands:
+        - echo "Post-build cleanup..."
+  artifacts:
+    baseDirectory: .
+    files:
+      - '**/*'
+  cache:
+    paths: []

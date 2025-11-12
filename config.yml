@@ -1,0 +1,48 @@
+name: Ticket Management System
+description: A web-based ticket management system with customer and company portals
+
+# Project metadata
+version: "1.0.0"
+author: "Anish"
+license: "MIT"
+
+# Environment configuration
+environment:
+  production:
+    domain: "your-domain.com"
+    ssl: true
+    
+  development:
+    port: 8000
+    ssl: false
+
+# Database configuration
+database:
+  type: "firebase"
+  service: "firestore"
+  
+# Features
+features:
+  - customer_portal
+  - company_dashboard
+  - real_time_updates
+  - ticket_tracking
+  - responsive_design
+
+# File structure
+files:
+  main: "index.html"
+  customer: "a.html"
+  company: "Company.html"
+  scripts: "access.js"
+  additional: "nested-structure.html"
+
+# Deployment settings
+deployment:
+  platform: "aws"
+  services:
+    - "amplify"
+    - "s3"
+    - "cloudfront"
+  build_command: "npm run build"
+  output_directory: "./"
